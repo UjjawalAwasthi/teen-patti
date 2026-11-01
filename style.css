@@ -195,3 +195,7 @@ h1 { margin: 6px 0 2px; font-size: 34px; letter-spacing: .5px; color: var(--gold
 }
 
 .ex-hint a, .banner a { color: var(--ink); text-decoration: underline; }
+
+.hostbar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding: 8px; border-radius: 10px; background: rgba(75, 123, 214, .15); border: 1px solid rgba(75, 123, 214, .5); }
+.hostbar .btn { flex: 1 1 auto; }
+.banner.paused { background: rgba(214, 69, 69, .15); border-color: var(--red); }

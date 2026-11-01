@@ -36,6 +36,7 @@ let roundNo = 0;
 
 let round = null; // { pot, stake, order:[ids], turn:id, dealer, shoe, discard, deadline, result }
 let lastResult = null;
+let paused = false;      // host paused: no automatic next round
 let lastDealer = null;
 let turnTimer = null, nextTimer = null;
 const swapRequests = new Map(); // requestId -> { id, from, to, fromIdx, expires }
@@ -152,8 +153,13 @@ function finishRound(winnerIds, text, reveal) {
   lastResult = { no: round.no, winners: winnerIds, text, reveal, dealer: round.dealer, pot: round.pot };
   round = null;
   swapRequests.clear();
-  if (settings.autoNext) {
-    nextTimer = setTimeout(() => { if (!round) { const err = startRound(); if (!err) broadcast(); } }, 8000);
+  scheduleNext();
+}
+
+function scheduleNext() {
+  clearTimeout(nextTimer);
+  if (settings.autoNext && !paused) {
+    nextTimer = setTimeout(() => { if (!round && !paused) { const err = startRound(); if (!err) broadcast(); } }, 8000);
   }
 }
 
@@ -322,6 +328,7 @@ function viewFor(p) {
       inRound: inHand(p), sittingOut: !!p.sittingOut,
     } : null,
     isHost: p && p.id === hostId,
+    paused,
     hostId,
     settings,
     players: seatOrder.map(id => publicPlayer(players.get(id))),
@@ -418,8 +425,18 @@ io.on('connection', socket => {
     if (!p || p.id !== hostId) return cb({ ok: false, error: 'Only the host can do that.' });
     let err = null;
     switch (cmd.type) {
-      case 'start': err = startRound(); break;
+      case 'start': paused = false; err = startRound(); break;
+      case 'pause':
+        paused = true; clearTimeout(nextTimer);
+        addLog(round ? 'Host paused the game: no new round will start after this one.' : 'Host paused the game.');
+        break;
+      case 'resume':
+        paused = false;
+        addLog('Host resumed the game.');
+        if (!round) err = startRound();
+        break;
       case 'end-round':
+        paused = true; clearTimeout(nextTimer);
         if (round) {
           // split pot equally among active players
           const act = activeIds();
@@ -442,7 +459,7 @@ io.on('connection', socket => {
         if (s.exchangeFeeMult != null) settings.exchangeFeeMult = num(s.exchangeFeeMult, 0, 10);
         if (s.stakeCapMult != null) settings.stakeCapMult = num(s.stakeCapMult, 2, 4096);
         if (s.maxPlayers != null) settings.maxPlayers = num(s.maxPlayers, 2, 100);
-        if (s.autoNext != null) settings.autoNext = !!s.autoNext;
+        if (s.autoNext != null) { settings.autoNext = !!s.autoNext; if (!settings.autoNext) clearTimeout(nextTimer); else if (!round) scheduleNext(); }
         addLog('Host updated the table settings.');
         break;
       }

@@ -80,12 +80,26 @@
     $('meName').textContent = me.name + (S.isHost ? ' (host)' : '');
     $('meChips').textContent = fmt(me.chips);
 
+    // host control bar
+    $('hostBar').classList.toggle('hidden', !S.isHost);
+    if (S.isHost) {
+      $('hbStart').classList.toggle('hidden', !!round);
+      $('hbStop').classList.toggle('hidden', !round);
+      $('hbPause').textContent = S.paused ? (round ? 'Resume auto-rounds' : 'Resume game') : (round ? 'Pause after this round' : 'Pause game');
+      $('hbPause').classList.toggle('hidden', !round && S.paused);
+    }
+
     // banner
     const b = $('banner');
-    if (!round && S.lastResult) {
+    b.classList.toggle('paused', !round && S.paused);
+    if (!round && S.paused) {
+      b.classList.remove('hidden');
+      b.innerHTML = (S.lastResult ? `<div>${esc(S.lastResult.text)}</div>` : '') +
+        `<div><b>Game paused by the host.</b> ${S.isHost ? 'Press "Start round" when you are ready.' : 'Waiting for the host to start the next round.'}</div>`;
+    } else if (!round && S.lastResult) {
       b.classList.remove('hidden');
       b.innerHTML = `<div>${esc(S.lastResult.text)}</div>` +
-        (settings.autoNext ? '<div class="hint">Next round starts in a few seconds.</div>' : '<div class="hint">Waiting for the host to start the next round.</div>');
+        (settings.autoNext ? `<div class="hint">Next round starts in a few seconds.${S.isHost ? ' Press "Pause game" to stop it.' : ''}</div>` : '<div class="hint">Waiting for the host to start the next round.</div>');
       if (S.lastResult.reveal && S.lastResult.reveal.length) {
         const r = document.createElement('div'); r.className = 'reveal';
         S.lastResult.reveal.forEach(x => {
@@ -280,7 +294,10 @@
   $('chkSitOut').onchange = e => socket.emit('sitout', e.target.checked, reply);
 
   $('hStart').onclick = () => host({ type: 'start' });
-  $('hEnd').onclick = () => { if (confirm('End this round and split the pot among active players?')) host({ type: 'end-round' }); };
+  $('hbStart').onclick = () => host({ type: 'start' });
+  $('hbPause').onclick = () => host({ type: S.paused ? 'resume' : 'pause' });
+  $('hbStop').onclick = () => { if (confirm('Stop this round now? The pot is split among players still in, and no new round starts until you press Start.')) host({ type: 'end-round' }); };
+  $('hEnd').onclick = () => { if (confirm('Stop this round now? The pot is split among players still in, and no new round starts until you press Start.')) host({ type: 'end-round' }); };
   $('hReset').onclick = () => { if (confirm('Reset every player to the starting chips?')) host({ type: 'reset-chips' }); };
   $('settingsForm').addEventListener('submit', e => {
     e.preventDefault();

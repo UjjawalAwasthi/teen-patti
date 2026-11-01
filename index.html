@@ -58,6 +58,11 @@
         </div>
         <div class="turn-indicator" id="turnInfo"></div>
       </div>
+      <div class="hostbar hidden" id="hostBar">
+        <button class="btn small gold" id="hbStart">Start round</button>
+        <button class="btn small" id="hbPause">Pause after this round</button>
+        <button class="btn small red" id="hbStop">Stop round now</button>
+      </div>
       <div class="hand" id="hand"></div>
       <div class="hand-label" id="handLabel"></div>
       <div class="timer"><div id="timerBar"></div></div>
@@ -101,7 +106,7 @@
       <div class="tab hidden" id="tab-host">
         <div class="host-actions">
           <button class="btn gold" id="hStart">Start round</button>
-          <button class="btn red" id="hEnd">End round (split pot)</button>
+          <button class="btn red" id="hEnd">Stop round now (split pot)</button>
           <button class="btn ghost" id="hReset">Reset all chips</button>
         </div>
         <form id="settingsForm" class="settings">
