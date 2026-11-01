@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Teen Patti Table</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- JOIN SCREEN -->
+<section id="join" class="screen">
+  <div class="join-card">
+    <div class="logo">
+      <span class="mini-card red">A♥</span><span class="mini-card">K♠</span><span class="mini-card red">Q♦</span>
+    </div>
+    <h1>Teen Patti</h1>
+    <p class="sub">One table, up to 60 players, 5-deck shoe</p>
+    <form id="joinForm" autocomplete="off">
+      <input id="nameInput" maxlength="18" placeholder="Enter your name" required>
+      <button class="btn gold big" type="submit">Start</button>
+    </form>
+    <p id="joinError" class="error"></p>
+    <details class="rules">
+      <summary>Hand rankings</summary>
+      <ol>
+        <li><b>Trail</b>: three of a kind (A-A-A highest)</li>
+        <li><b>Pure Sequence</b>: three in a row, same suit</li>
+        <li><b>Sequence</b>: three in a row (A-K-Q highest, A-2-3 lowest)</li>
+        <li><b>Colour</b>: three of the same suit</li>
+        <li><b>Pair</b>: two of the same rank</li>
+        <li><b>High Card</b>: none of the above</li>
+      </ol>
+      <p>Ties: higher cards win, then suits (♠ &gt; ♥ &gt; ♦ &gt; ♣). If hands are identical, whoever asked for the Show loses.</p>
+    </details>
+  </div>
+</section>
+
+<!-- GAME SCREEN -->
+<section id="game" class="screen hidden">
+  <header class="topbar">
+    <div class="stat"><span>Round</span><b id="roundNo">-</b></div>
+    <div class="stat pot"><span>Pot</span><b id="pot">0</b></div>
+    <div class="stat"><span>Stake</span><b id="stake">-</b></div>
+    <div class="stat"><span>Shoe</span><b id="shoe">-</b></div>
+    <div class="stat"><span>Players</span><b id="playerCount">0</b></div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <main class="layout">
+    <!-- my seat -->
+    <section class="myseat">
+      <div class="me-row">
+        <div>
+          <div class="me-name" id="meName"></div>
+          <div class="me-chips"><span id="meChips">0</span> chips</div>
+        </div>
+        <div class="turn-indicator" id="turnInfo"></div>
+      </div>
+      <div class="hand" id="hand"></div>
+      <div class="hand-label" id="handLabel"></div>
+      <div class="timer"><div id="timerBar"></div></div>
+
+      <div class="actions" id="actions">
+        <button class="btn" id="btnSee">See cards</button>
+        <button class="btn green" id="btnChaal">Chaal</button>
+        <button class="btn green" id="btnRaise">Raise</button>
+        <button class="btn gold" id="btnShow">Show</button>
+        <button class="btn red" id="btnPack">Pack</button>
+      </div>
+
+      <div class="exchange" id="exchangeBox">
+        <div class="ex-head">Exchange <span id="exLeft"></span> <span id="exFee"></span></div>
+        <div class="ex-buttons">
+          <button class="btn small" id="btnExOne">1 card with shoe</button>
+          <button class="btn small" id="btnExAll">Whole hand</button>
+          <button class="btn small" id="btnExPlayer">Swap with a player</button>
+        </div>
+        <div class="ex-hint" id="exHint"></div>
+      </div>
+
+      <div class="waiting" id="waiting"></div>
+      <div class="me-extra">
+        <button class="btn small ghost" id="btnRebuy">Rebuy</button>
+        <label class="toggle"><input type="checkbox" id="chkSitOut"> Sit out next round</label>
+      </div>
+    </section>
+
+    <!-- tabs -->
+    <section class="panel">
+      <nav class="tabs">
+        <button data-tab="table" class="active">Table</button>
+        <button data-tab="board">Leaderboard</button>
+        <button data-tab="log">Log</button>
+        <button data-tab="host" id="hostTab" class="hidden">Host</button>
+      </nav>
+      <div class="tab" id="tab-table"><div class="grid" id="grid"></div></div>
+      <div class="tab hidden" id="tab-board"><table class="board"><thead><tr><th>#</th><th>Player</th><th>Chips</th><th>Net</th></tr></thead><tbody id="boardBody"></tbody></table></div>
+      <div class="tab hidden" id="tab-log"><ul class="log" id="log"></ul></div>
+      <div class="tab hidden" id="tab-host">
+        <div class="host-actions">
+          <button class="btn gold" id="hStart">Start round</button>
+          <button class="btn red" id="hEnd">End round (split pot)</button>
+          <button class="btn ghost" id="hReset">Reset all chips</button>
+        </div>
+        <form id="settingsForm" class="settings">
+          <label>Boot amount <input type="number" name="boot" min="1"></label>
+          <label>Starting chips <input type="number" name="startChips" min="10"></label>
+          <label>Turn time (sec) <input type="number" name="turnSeconds" min="10" max="180"></label>
+          <label>Exchanges per player per round <input type="number" name="exchangesPerRound" min="0" max="5"></label>
+          <label>Exchange fee (x current stake, 0 = free) <input type="number" name="exchangeFeeMult" min="0" max="10"></label>
+          <label>Stake limit (x boot) <input type="number" name="stakeCapMult" min="2"></label>
+          <label>Max players <input type="number" name="maxPlayers" min="2" max="100"></label>
+          <label class="toggle"><input type="checkbox" name="autoNext"> Auto-start next round</label>
+          <button class="btn green" type="submit">Save settings</button>
+        </form>
+        <p class="hint">Tap a player in the Table tab to remove them or make them host.</p>
+      </div>
+    </section>
+  </main>
+</section>
+
+<!-- modal -->
+<div id="modal" class="modal hidden"><div class="modal-card" id="modalCard"></div></div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
